@@ -1952,4 +1952,150 @@ export const datasetRouter = createTRPCRouter({
 
       return updatedDataset;
     }),
+
+  // Dataset Item Metadata Fields
+  getDatasetItemMetadataFields: protectedProjectProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        datasetItemId: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      throwIfNoProjectAccess({
+        session: ctx.session,
+        projectId: input.projectId,
+        scope: "datasets:read",
+      });
+
+      const { getDatasetItemMetadataFields } = await import(
+        "@langfuse/shared/src/server"
+      );
+
+      return getDatasetItemMetadataFields({
+        projectId: input.projectId,
+        datasetItemId: input.datasetItemId,
+      });
+    }),
+
+  createDatasetItemMetadataField: protectedProjectProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        datasetItemId: z.string(),
+        fieldName: z.string().min(1),
+        fieldValue: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      throwIfNoProjectAccess({
+        session: ctx.session,
+        projectId: input.projectId,
+        scope: "datasets:CUD",
+      });
+
+      const { createDatasetItemMetadataField } = await import(
+        "@langfuse/shared/src/server"
+      );
+
+      const field = await createDatasetItemMetadataField({
+        projectId: input.projectId,
+        datasetItemId: input.datasetItemId,
+        fieldName: input.fieldName,
+        fieldValue: input.fieldValue,
+      });
+
+      await auditLog({
+        session: ctx.session,
+        resourceType: "datasetItem",
+        resourceId: input.datasetItemId,
+        action: "createMetadataField",
+        after: field,
+      });
+
+      return field;
+    }),
+
+  updateDatasetItemMetadataField: protectedProjectProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        fieldId: z.string(),
+        fieldName: z.string().min(1).optional(),
+        fieldValue: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      throwIfNoProjectAccess({
+        session: ctx.session,
+        projectId: input.projectId,
+        scope: "datasets:CUD",
+      });
+
+      const {
+        updateDatasetItemMetadataField,
+        getDatasetItemMetadataFieldById,
+      } = await import("@langfuse/shared/src/server");
+
+      const before = await getDatasetItemMetadataFieldById({
+        projectId: input.projectId,
+        fieldId: input.fieldId,
+      });
+
+      const field = await updateDatasetItemMetadataField({
+        projectId: input.projectId,
+        fieldId: input.fieldId,
+        fieldName: input.fieldName,
+        fieldValue: input.fieldValue,
+      });
+
+      await auditLog({
+        session: ctx.session,
+        resourceType: "datasetItem",
+        resourceId: before.datasetItemId,
+        action: "updateMetadataField",
+        before,
+        after: field,
+      });
+
+      return field;
+    }),
+
+  deleteDatasetItemMetadataField: protectedProjectProcedure
+    .input(
+      z.object({
+        projectId: z.string(),
+        fieldId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      throwIfNoProjectAccess({
+        session: ctx.session,
+        projectId: input.projectId,
+        scope: "datasets:CUD",
+      });
+
+      const {
+        deleteDatasetItemMetadataField,
+        getDatasetItemMetadataFieldById,
+      } = await import("@langfuse/shared/src/server");
+
+      const field = await getDatasetItemMetadataFieldById({
+        projectId: input.projectId,
+        fieldId: input.fieldId,
+      });
+
+      await deleteDatasetItemMetadataField({
+        projectId: input.projectId,
+        fieldId: input.fieldId,
+      });
+
+      await auditLog({
+        session: ctx.session,
+        resourceType: "datasetItem",
+        resourceId: field.datasetItemId,
+        action: "deleteMetadataField",
+        before: field,
+      });
+    }),
 });

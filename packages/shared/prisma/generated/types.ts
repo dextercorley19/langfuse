@@ -456,6 +456,15 @@ export type DatasetItem = {
   valid_to: Timestamp | null;
   is_deleted: Generated<boolean>;
 };
+export type DatasetItemMetadataField = {
+  id: string;
+  project_id: string;
+  dataset_item_id: string;
+  field_name: string;
+  field_value: string;
+  created_at: Generated<Timestamp>;
+  updated_at: Generated<Timestamp>;
+};
 export type DatasetRunItems = {
   id: string;
   project_id: string;
@@ -944,6 +953,7 @@ export type DB = {
   cron_jobs: CronJobs;
   dashboard_widgets: DashboardWidget;
   dashboards: Dashboard;
+  dataset_item_metadata_fields: DatasetItemMetadataField;
   dataset_items: DatasetItem;
   dataset_run_items: DatasetRunItems;
   dataset_runs: DatasetRuns;
