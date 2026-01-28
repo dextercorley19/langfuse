@@ -635,6 +635,20 @@ model DatasetItem {
   @@map("dataset_items")
 }
 
+model DatasetItemMetadataField {
+  id            String   @id @default(cuid())
+  projectId     String   @map("project_id")
+  datasetItemId String   @map("dataset_item_id")
+  fieldName     String   @map("field_name")
+  fieldValue    String   @map("field_value")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@index([datasetItemId, projectId])
+  @@index([projectId])
+  @@map("dataset_item_metadata_fields")
+}
+
 enum DatasetStatus {
   ACTIVE
   ARCHIVED
