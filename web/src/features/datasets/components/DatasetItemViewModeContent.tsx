@@ -4,6 +4,9 @@ import {
   type DatasetSchema,
 } from "../utils/datasetItemUtils";
 import { DatasetItemFields } from "@/src/features/datasets/components/DatasetItemFields";
+import { DatasetItemMetadataFields } from "@/src/features/datasets/components/DatasetItemMetadataFields";
+import { useRouter } from "next/router";
+import { useHasProjectAccess } from "@/src/features/rbac/utils/checkProjectAccess";
 
 type DatasetItemViewModeContentProps = {
   item: DatasetItemDomain | null;
@@ -20,6 +23,13 @@ export const DatasetItemViewModeContent = ({
   isLoading,
   dataset,
 }: DatasetItemViewModeContentProps) => {
+  const router = useRouter();
+  const projectId = router.query.projectId as string;
+  const hasEditAccess = useHasProjectAccess({
+    projectId,
+    scope: "datasets:CUD",
+  });
+
   if (isLoading) {
     return <div className="text-sm text-muted-foreground">Loading...</div>;
   }
@@ -38,12 +48,19 @@ export const DatasetItemViewModeContent = ({
   }
 
   return (
-    <DatasetItemFields
-      inputValue={stringifyDatasetItemData(item.input)}
-      expectedOutputValue={stringifyDatasetItemData(item.expectedOutput)}
-      metadataValue={stringifyDatasetItemData(item.metadata)}
-      dataset={dataset}
-      editable={false}
-    />
+    <div className="space-y-8">
+      <DatasetItemFields
+        inputValue={stringifyDatasetItemData(item.input)}
+        expectedOutputValue={stringifyDatasetItemData(item.expectedOutput)}
+        metadataValue={stringifyDatasetItemData(item.metadata)}
+        dataset={dataset}
+        editable={false}
+      />
+      <DatasetItemMetadataFields
+        projectId={projectId}
+        datasetItemId={item.id}
+        hasEditAccess={hasEditAccess}
+      />
+    </div>
   );
 };
