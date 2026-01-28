@@ -29,13 +29,18 @@ describe("Dataset Item Metadata Fields", () => {
     datasetId = dataset.id;
 
     // Create a dataset item
-    const item = await createDatasetItem({
+    const itemResult = await createDatasetItem({
       projectId,
       datasetId,
       input: { question: "What is 2+2?" },
       expectedOutput: { answer: "4" },
     });
-    datasetItemId = item.id;
+
+    if (!itemResult.success) {
+      throw new Error("Failed to create dataset item");
+    }
+
+    datasetItemId = itemResult.datasetItem.id;
   });
 
   it("should create a metadata field for a dataset item", async () => {

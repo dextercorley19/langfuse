@@ -12,6 +12,7 @@ import { api } from "@/src/utils/api";
 import { Pencil, Plus, Trash2, X, Check } from "lucide-react";
 import { useState } from "react";
 import { usePostHogClientCapture } from "@/src/features/posthog-analytics/usePostHogClientCapture";
+import { useToast } from "@/src/components/ui/use-toast";
 
 type MetadataField = {
   id: string;
@@ -31,6 +32,7 @@ export function DatasetItemMetadataFields({
   hasEditAccess: boolean;
 }) {
   const capture = usePostHogClientCapture();
+  const { toast } = useToast();
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newField, setNewField] = useState({ name: "", value: "" });
@@ -52,6 +54,13 @@ export function DatasetItemMetadataFields({
         setIsAdding(false);
         capture("dataset_item_metadata_field:create");
       },
+      onError: (error) => {
+        toast({
+          title: "Error creating metadata field",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
     });
 
   const updateMutation =
@@ -61,6 +70,13 @@ export function DatasetItemMetadataFields({
         setEditingId(null);
         capture("dataset_item_metadata_field:update");
       },
+      onError: (error) => {
+        toast({
+          title: "Error updating metadata field",
+          description: error.message,
+          variant: "destructive",
+        });
+      },
     });
 
   const deleteMutation =
@@ -68,6 +84,13 @@ export function DatasetItemMetadataFields({
       onSuccess: () => {
         utils.datasets.getDatasetItemMetadataFields.invalidate();
         capture("dataset_item_metadata_field:delete");
+      },
+      onError: (error) => {
+        toast({
+          title: "Error deleting metadata field",
+          description: error.message,
+          variant: "destructive",
+        });
       },
     });
 
@@ -98,6 +121,7 @@ export function DatasetItemMetadataFields({
   };
 
   const startEdit = (field: MetadataField) => {
+    if (!hasEditAccess) return;
     setEditingId(field.id);
     setEditField({ name: field.fieldName, value: field.fieldValue });
   };

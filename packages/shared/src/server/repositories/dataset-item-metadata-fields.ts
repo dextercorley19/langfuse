@@ -46,7 +46,7 @@ export async function getDatasetItemMetadataFieldById(params: {
   projectId: string;
   fieldId: string;
 }): Promise<DatasetItemMetadataField> {
-  const field = await prisma.datasetItemMetadataField.findUnique({
+  const field = await prisma.datasetItemMetadataField.findFirst({
     where: {
       id: params.fieldId,
       projectId: params.projectId,
@@ -89,10 +89,15 @@ export async function updateDatasetItemMetadataField(params: {
   fieldName?: string;
   fieldValue?: string;
 }): Promise<DatasetItemMetadataField> {
+  // Verify the field exists and belongs to the project
+  await getDatasetItemMetadataFieldById({
+    projectId: params.projectId,
+    fieldId: params.fieldId,
+  });
+
   const field = await prisma.datasetItemMetadataField.update({
     where: {
       id: params.fieldId,
-      projectId: params.projectId,
     },
     data: {
       ...(params.fieldName !== undefined && { fieldName: params.fieldName }),
@@ -111,10 +116,15 @@ export async function deleteDatasetItemMetadataField(params: {
   projectId: string;
   fieldId: string;
 }): Promise<void> {
+  // Verify the field exists and belongs to the project
+  await getDatasetItemMetadataFieldById({
+    projectId: params.projectId,
+    fieldId: params.fieldId,
+  });
+
   await prisma.datasetItemMetadataField.delete({
     where: {
       id: params.fieldId,
-      projectId: params.projectId,
     },
   });
 }

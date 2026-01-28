@@ -1994,9 +1994,21 @@ export const datasetRouter = createTRPCRouter({
         scope: "datasets:CUD",
       });
 
-      const { createDatasetItemMetadataField } = await import(
-        "@langfuse/shared/src/server"
-      );
+      const { createDatasetItemMetadataField, getDatasetItemById } =
+        await import("@langfuse/shared/src/server");
+
+      // Verify the dataset item exists and belongs to the project
+      const datasetItem = await getDatasetItemById({
+        projectId: input.projectId,
+        datasetItemId: input.datasetItemId,
+      });
+
+      if (!datasetItem) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Dataset item not found",
+        });
+      }
 
       const field = await createDatasetItemMetadataField({
         projectId: input.projectId,
